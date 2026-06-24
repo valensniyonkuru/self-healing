@@ -1,0 +1,84 @@
+{
+  "_comment": "lambda-role-policy.json — TechStream Self-Healing lab (Step 5). Least-privilege policy for the TechStream-Remediate Lambda execution role. Attach with: aws iam put-role-policy --role-name TechStream-LambdaRole --policy-name TechStream-RemediatePolicy --policy-document file://lambda-role-policy.json",
+
+  "Version": "2012-10-17",
+  "Statement": [
+
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": [
+        "arn:aws:logs:us-east-1:*:log-group:/aws/lambda/TechStream-Remediate",
+        "arn:aws:logs:us-east-1:*:log-group:/aws/lambda/TechStream-Remediate:*"
+      ]
+    },
+
+    {
+      "Sid": "EC2DescribeInstances",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeInstances"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+
+    {
+      "Sid": "SSMSendCommand",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:SendCommand",
+        "ssm:GetCommandInvocation"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:*:instance/*",
+        "arn:aws:ssm:us-east-1::document/AWS-RunShellScript"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "aws:ResourceTag/Project": "TechStream",
+          "aws:ResourceTag/Lab":     "SelfHealing"
+        }
+      }
+    },
+
+    {
+      "Sid": "SSMGetCommandInvocationUnscoped",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetCommandInvocation"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    },
+
+    {
+      "Sid": "AutoScalingDescribeAndScale",
+      "Effect": "Allow",
+      "Action": [
+        "autoscaling:DescribeAutoScalingGroups",
+        "autoscaling:SetDesiredCapacity"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestedRegion": "us-east-1"
+        }
+      }
+    }
+
+  ]
+}

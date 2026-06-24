@@ -1,0 +1,12 @@
+{
+  "_comment": "eventbridge-rule.json — TechStream Self-Healing lab (Step 5). Reference copy of the EventBridge event pattern. The canonical source of truth is alarm.tf; use this file for documentation or to create the rule via AWS CLI: aws events put-rule --name TechStream-AlarmStateChange --event-pattern file://eventbridge-rule.json --state ENABLED --region us-east-1",
+
+  "source": ["aws.cloudwatch"],
+  "detail-type": ["CloudWatch Alarm State Change"],
+  "detail": {
+    "alarmName": ["TechStream-HighErrorRate"],
+    "state": {
+      "value": ["ALARM"]
+    }
+  }
+}

@@ -1,0 +1,82 @@
+{
+  "_comment": "amazon-cloudwatch-agent.json — TechStream Self-Healing lab (Step 2). Push this file to SSM Parameter Store as /techstream/cw-agent-config, then activate it on the instance with: amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -s -c ssm:/techstream/cw-agent-config",
+
+  "agent": {
+    "metrics_collection_interval": 60,
+    "run_as_user": "cwagent",
+    "logfile": "/opt/aws/amazon-cloudwatch-agent/logs/amazon-cloudwatch-agent.log"
+  },
+
+  "metrics": {
+    "namespace": "TechStream/WebServer",
+
+    "append_dimensions": {
+      "InstanceId":            "${aws:InstanceId}",
+      "AutoScalingGroupName":  "${aws:AutoScalingGroupName}"
+    },
+
+    "aggregation_dimensions": [
+      ["AutoScalingGroupName"],
+      ["InstanceId"]
+    ],
+
+    "metrics_collected": {
+
+      "cpu": {
+        "measurement": [
+          "cpu_usage_idle"
+        ],
+        "metrics_collection_interval": 60,
+        "totalcpu": true
+      },
+
+      "mem": {
+        "measurement": [
+          "mem_used_percent"
+        ],
+        "metrics_collection_interval": 60
+      },
+
+      "disk": {
+        "measurement": [
+          "disk_used_percent"
+        ],
+        "metrics_collection_interval": 60,
+        "resources": ["/"]
+      },
+
+      "statsd": {
+        "service_address":              ":8125",
+        "metrics_collection_interval":  60,
+        "metrics_aggregation_interval": 60
+      }
+    }
+  },
+
+  "logs": {
+    "logs_collected": {
+      "files": {
+        "collect_list": [
+          {
+            "_comment": "Main application log — one JSON object per line",
+            "file_path":         "/var/log/app.log",
+            "log_group_name":    "/techstream/app",
+            "log_stream_name":   "{instance_id}",
+            "timezone":          "UTC",
+            "timestamp_format":  "%Y-%m-%dT%H:%M:%S",
+            "multi_line_start_pattern": "^\\{"
+          },
+          {
+            "_comment": "System log — useful for spotting OOM kills or kernel panics",
+            "file_path":       "/var/log/messages",
+            "log_group_name":  "/techstream/system",
+            "log_stream_name": "{instance_id}",
+            "timezone":        "UTC"
+          }
+        ]
+      }
+    },
+    "log_stream_name": "default",
+    "force_flush_interval": 15
+  }
+}

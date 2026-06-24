@@ -1,0 +1,219 @@
+{
+  "_comment": "dashboard.json — TechStream Self-Healing lab (Step 3). Deploy with: aws cloudwatch put-dashboard --dashboard-name TechStream-GoldenSignals --dashboard-body file://dashboard.json --region us-east-1",
+
+  "widgets": [
+
+    {
+      "_comment": "Widget 1 — LATENCY (p50 + p99). Source: techstream_avg_latency_ms pushed by the app's /metrics scrape via the CW agent. Two lines on one graph so you can see median vs tail latency diverge under chaos.",
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Latency — p50 & p99 (ms)",
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "stat": "p50",
+        "period": 60,
+        "yAxis": {
+          "left": {
+            "label": "Milliseconds",
+            "min": 0
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "SLO ceiling (2 000 ms)",
+              "value": 2000,
+              "color": "#ff6961",
+              "fill": "above"
+            }
+          ]
+        },
+        "metrics": [
+          [
+            "TechStream/WebServer",
+            "techstream_avg_latency_ms",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "p50",
+              "label": "p50 latency",
+              "stat": "p50",
+              "color": "#1f77b4"
+            }
+          ],
+          [
+            "TechStream/WebServer",
+            "techstream_avg_latency_ms",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "p99",
+              "label": "p99 latency",
+              "stat": "p99",
+              "color": "#d62728"
+            }
+          ]
+        ]
+      }
+    },
+
+    {
+      "_comment": "Widget 2 — TRAFFIC (requests per minute). SampleCount of techstream_requests_total gives the number of data-points (= scrape intervals) per period; multiply by requests-per-scrape if you push a delta. For a lab, Sum over 60 s is close enough to RPM.",
+      "type": "metric",
+      "x": 12,
+      "y": 0,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Traffic — Requests per Minute",
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "stat": "Sum",
+        "period": 60,
+        "yAxis": {
+          "left": {
+            "label": "Requests / min",
+            "min": 0
+          }
+        },
+        "metrics": [
+          [
+            "TechStream/WebServer",
+            "techstream_requests_total",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "rpm",
+              "label": "Requests / min",
+              "stat": "Sum",
+              "color": "#2ca02c"
+            }
+          ]
+        ]
+      }
+    },
+
+    {
+      "_comment": "Widget 3 — ERROR RATE (%). Uses a math expression: errors / total * 100. The horizontal annotation at 5 % mirrors the CloudWatch Alarm threshold from Step 5.",
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "Error Rate — HTTP 5xx (%)",
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": {
+          "left": {
+            "label": "Error %",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "Alarm threshold (5 %)",
+              "value": 5,
+              "color": "#ff6961",
+              "fill": "above"
+            }
+          ]
+        },
+        "metrics": [
+          [
+            "TechStream/WebServer",
+            "techstream_errors_total",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "errors",
+              "label": "Errors",
+              "stat": "Sum",
+              "visible": false
+            }
+          ],
+          [
+            "TechStream/WebServer",
+            "techstream_requests_total",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "total",
+              "label": "Total requests",
+              "stat": "Sum",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "IF(total > 0, (errors / total) * 100, 0)",
+              "id": "error_rate",
+              "label": "Error rate %",
+              "color": "#ff7f0e"
+            }
+          ]
+        ]
+      }
+    },
+
+    {
+      "_comment": "Widget 4 — CPU SATURATION. cpu_usage_idle is reported by the CW agent. We invert it (100 - idle = used %) with a math expression so the graph rises under load, matching user intuition.",
+      "type": "metric",
+      "x": 12,
+      "y": 6,
+      "width": 12,
+      "height": 6,
+      "properties": {
+        "title": "CPU Saturation — Usage % (inverted idle)",
+        "view": "timeSeries",
+        "stacked": false,
+        "region": "us-east-1",
+        "period": 60,
+        "yAxis": {
+          "left": {
+            "label": "CPU Used %",
+            "min": 0,
+            "max": 100
+          }
+        },
+        "annotations": {
+          "horizontal": [
+            {
+              "label": "High saturation (80 %)",
+              "value": 80,
+              "color": "#ff6961",
+              "fill": "above"
+            }
+          ]
+        },
+        "metrics": [
+          [
+            "TechStream/WebServer",
+            "cpu_usage_idle",
+            "AutoScalingGroupName", "TechStream-ASG",
+            {
+              "id": "idle",
+              "label": "CPU idle %",
+              "stat": "Average",
+              "visible": false
+            }
+          ],
+          [
+            {
+              "expression": "100 - idle",
+              "id": "cpu_used",
+              "label": "CPU used %",
+              "color": "#9467bd"
+            }
+          ]
+        ]
+      }
+    }
+
+  ]
+}
