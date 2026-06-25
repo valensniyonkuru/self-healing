@@ -84,6 +84,8 @@ Emits structured JSON logs to `/var/log/app.log` for CloudWatch ingestion.
 | Evaluation periods | 2 consecutive 1-minute periods |
 | Alarm actions | SNS (email) + EventBridge → Lambda |
 
+![Alarm firing in ALARM state](images/alarm-firing.png)
+
 ### Lambda Remediation (`remediate.py`)
 | Tier | Action |
 |------|--------|
