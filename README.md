@@ -138,6 +138,8 @@ terraform apply
 - A systemd service (`techstream-app`) with `Restart=on-failure`
 - `stress-ng` for CPU chaos testing
 
+![EC2 Instance running](images/ec2-instance.png)
+
 ### 4. Deploy the Lambda function
 ```bash
 zip remediate.zip remediate.py
