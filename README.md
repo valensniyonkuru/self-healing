@@ -182,6 +182,8 @@ Import `dashboard.json` into CloudWatch Dashboards to view:
 | Error Rate | HTTP 5xx % | 5% alarm threshold |
 | CPU Saturation | CPU used % | 80% high-saturation |
 
+![CloudWatch Dashboard](images/dashboard.png)
+
 ---
 
 ## IAM Permissions (Lambda)
