@@ -92,6 +92,8 @@ Emits structured JSON logs to `/var/log/app.log` for CloudWatch ingestion.
 | Primary | SSM `systemctl restart techstream-app` on all tagged instances |
 | Fallback | ASG `SetDesiredCapacity` += 1, `HonorCooldown=False` |
 
+![Lambda invocation logs](images/lambda-logs.png)
+
 ### CloudWatch Agent (`amazon-cloudwatch-agent.json`)
 - **Namespace:** `TechStream/WebServer`
 - **Metrics:** error rate, latency, request count, CPU, memory, disk
